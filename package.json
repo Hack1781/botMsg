@@ -1,0 +1,28 @@
+{
+  "name": "bot-msg",
+  "version": "1.0.0",
+  "description": "hi",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://casiru@github.com/Hack1781/botMsg.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hack1781/botMsg/issues"
+  },
+  "homepage": "https://github.com/Hack1781/botMsg#readme",
+  "dependencies": {
+    "body-parser": "^1.16.1",
+    "config": "^1.25.1",
+    "express": "^4.14.1",
+    "knex": "^0.12.6",
+    "lodash": "^4.17.4",
+    "mysql": "^2.13.0"
+  }
+}
