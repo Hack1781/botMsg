@@ -1,4 +1,4 @@
 const Content = require('../services/content');
 
 
-Content.getDailyContent();
+Content.sendDailyContent('youtube');

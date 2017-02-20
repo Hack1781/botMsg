@@ -1,27 +1,38 @@
-//const 
+const request = require('request');
 const conDao = require('../dao/contents');
 const celabDao = require('../dao/celab');
 
+function getRandomInt(max) {
+    return Math.floor(Math.random() * (max + 1));
+}
+
 function getCelebContent(type, celebId) {
     return conDao.findContents(type, celebId).then(rows => {
+        if (rows.length === 0) {
+            return null;
+        }
+        let index = getRandomInt(rows.length - 1);
         if (rows && rows.length > 0) {
-            return rows[0].url;
+            return rows[index].url;
         }
     });
 }
 
-function getDailyContent(type) {
-    celabDao.findAll().then(rows => {
-        rows.forEach(row => {
-            return getCelebContent('youtube', row.id).then(result => {
-                //request.post({url: URL, data: result});
+function sendDailyContent(type) {
+    celabDao.findAll().then(celebs => {
+        celebs.forEach(celeb => {
+            return getCelebContent(type, celeb.id).then(result => {
+                request({
+                    url: 'https://geek1781.com/message/push',
+                    method: 'POST',
+                    json: {
+                        topic: celeb.name,
+                        msg: result
+                    }
+                });
             });
         });
     });
-}
-
-function getRandomInt(max) {
-    return Math.floor(Math.random() * (max + 1));
 }
 
 function getMoreContentsAboutCeleb(celebName) {
@@ -42,6 +53,6 @@ function getMoreContentsAboutCeleb(celebName) {
 
 
 module.exports = {
-    getDailyContent: getDailyContent,
+    sendDailyContent: sendDailyContent,
     getMoreContentsAboutCeleb: getMoreContentsAboutCeleb
 }
