@@ -28,3 +28,12 @@ crontab.scheduleJob("0 14 * * *", function(){ // 14:00
         logger.info('noon batch > error : ' + error);
     });
 });
+
+
+crontab.scheduleJob("35 22 * * *", function(){ // 14:00
+    Content.sendDailyContent('youtube').then(result => {
+        logger.info('noon batch > success');
+    }).catch(error => {
+        logger.info('noon batch > error : ' + error);
+    });
+});
