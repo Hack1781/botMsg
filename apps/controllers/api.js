@@ -1,25 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Crawler = require('../services/crawler');
 const Contents = require('../services/linebot');
-
-/**
- * celeb 관련 API는 현재는 없어도 될듯
- */
-router.get('/crawler', function(request, response) {
-  let params = request.query;
-  let id = params.id ? params.id : 1;
-  Crawler.find(id).then(function(result) {
-    response.send(result);
-  });
-});
-
-router.post('crawler', function(request, response) {
-  let params = request.body;
-  Crawler.add(params).then(function(result) {
-    response.send('OK')
-  });
-});
 
 /**
  * 컨텐츠 더보기 API
@@ -60,7 +41,7 @@ router.get('/contents', function(request, response) {
  *   viewCount :
  * }]
  */
-router.post('contents', function(request, response) {
+router.post('/contents', function(request, response) {
   // celab type으로 celeb id 정보를 얻어온다. Crawler.find(type)
 
   let params = request.body;
