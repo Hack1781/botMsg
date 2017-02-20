@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const celabDao = require('../dao/celab');
 const Contents = require('../services/linebot');
+
+router.get('/celabs', function(request, response) {
+  celabDao.findAll().then(rows => {
+    response.send(rows);
+  });
+});
 
 /**
  * 컨텐츠 더보기 API
