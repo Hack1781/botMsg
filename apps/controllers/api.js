@@ -63,6 +63,9 @@ router.get('/contents', function(request, response) {
 router.post('/contents', function(request, response) {
   // celab type으로 celeb id 정보를 얻어온다. Crawler.find(type)
   let params = request.body;
+  if (params.title) {
+    params.title = encodeURI(params.title);
+  }
 
   logger.info('post > contents [' + JSON.stringify(params, null, 2) + ']');
 
