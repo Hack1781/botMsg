@@ -3,6 +3,7 @@ const router = express.Router();
 const winston = require('winston');
 const celabDao = require('../dao/celab');
 const Contents = require('../services/linebot');
+const Content = require('../services/content');
 
  const logger = new (winston.Logger)({
    level: "info",
@@ -42,6 +43,17 @@ router.get('/contents', function(request, response) {
 
   Contents.find(id).then(function(result) {
     response.send(result);
+  });
+});
+
+router.get('/contents/more', function(request, response) {
+  let params = request.query;
+
+  Content.getMoreContentsAboutCeleb(params.topic).then(msg => {
+    if (!msg) {
+      response.status(400).send('unknown topic : ' + params.topic);
+    }
+    response.send({topic: params.topic, client_id: params.client_id, msg: msg});
   });
 });
 
