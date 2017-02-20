@@ -25,6 +25,7 @@
     "lodash": "^4.17.4",
     "mysql": "^2.13.0",
     "node-crontab": "0.0.8",
-    "request": "^2.79.0"
+    "request": "^2.79.0",
+    "winston": "^2.3.1"
   }
 }

@@ -1,9 +1,20 @@
 const express = require('express');
 const router = express.Router();
+const winston = require('winston');
 const celabDao = require('../dao/celab');
 const Contents = require('../services/linebot');
 
+ const logger = new (winston.Logger)({
+   level: "info",
+    transports: [
+      new (winston.transports.File)({ filename: 'debug.log' })
+    ]
+  });
+
 router.get('/celabs', function(request, response) {
+
+  logger.info('get > celabs');
+
   celabDao.findAll().then(rows => {
     response.send(rows);
   });
@@ -28,6 +39,7 @@ router.get('/celabs', function(request, response) {
 router.get('/contents', function(request, response) {
   let params = request.query;
   let id = params.id ? params.id : 1;
+
   Contents.find(id).then(function(result) {
     response.send(result);
   });
@@ -50,8 +62,10 @@ router.get('/contents', function(request, response) {
  */
 router.post('/contents', function(request, response) {
   // celab type으로 celeb id 정보를 얻어온다. Crawler.find(type)
-
   let params = request.body;
+
+  logger.info('post > contents [' + JSON.stringify(params, null, 2) + ']');
+
   Contents.add(params).then(function(result) {
     response.send('OK')
   });
