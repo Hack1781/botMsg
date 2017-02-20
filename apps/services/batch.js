@@ -3,7 +3,7 @@ var crontab = require('node-crontab');
 
 const request = require('request');
 const URL = 'abdfdfdf';
-const Content = require('../content');
+const Content = require('./content');
 const winston = require('winston');
 const logger = new (winston.Logger)({
    level: "info",

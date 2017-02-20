@@ -18,20 +18,31 @@ function getCelebContent(type, celebId) {
     });
 }
 
-function sendDailyContent(type) {
-    celabDao.findAll().then(celebs => {
-        celebs.forEach(celeb => {
-            return getCelebContent(type, celeb.id).then(result => {
-                request({
+function sendContentToCeleb(type, celeb) {
+    return getCelebContent(type, celeb.id).then(result => {
+        return new Promise(resolve => {
+             request({
                     url: 'https://geek1781.com/message/push',
                     method: 'POST',
                     json: {
                         topic: celeb.name,
                         msg: result
                     }
+                }, function(error, response) {
+                    resolve();
                 });
             });
         });
+}
+
+function sendDailyContent(type) {
+    return celabDao.findAll().then(celebs => {
+        let tasks = [];
+        celebs.forEach(celeb => {
+            tasks.push(sendContentToCeleb(type, celeb));
+        });
+
+        return Promise.all(tasks);
     });
 }
 
