@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const winston = require('winston');
 const celabDao = require('../dao/celab');
-const Contents = require('../services/linebot');
 const Content = require('../services/content');
 
  const logger = new (winston.Logger)({
@@ -41,7 +40,7 @@ router.get('/contents', function(request, response) {
   let params = request.query;
   let id = params.id ? params.id : 1;
 
-  Contents.find(id).then(function(result) {
+  Content.find(id).then(function(result) {
     response.send(result);
   });
 });
@@ -81,7 +80,7 @@ router.post('/contents', function(request, response) {
 
   logger.info('post > contents [' + JSON.stringify(params, null, 2) + ']');
 
-  Contents.add(params).then(function(result) {
+  Content.add(params).then(function(result) {
     response.send('OK')
   });
 });

@@ -13,16 +13,32 @@ const logger = new (winston.Logger)({
   });
 
 
-crontab.scheduleJob("0 8 * * *", function(){ // 8:00
-    Content.sendDailyContent('naver_news').then(result => {
+crontab.scheduleJob("0 9 * * *", function(){ // 9:00
+    Content.sendDailyContent('morning', 'naver_news').then(result => {
         logger.info('morning batch > success');
     }).catch(error => {
         logger.info('morning batch > error : ' + error);
     });
 });
 
-crontab.scheduleJob("0 14 * * *", function(){ // 14:00
-    Content.sendDailyContent('youtube').then(result => {
+crontab.scheduleJob("0 13 * * *", function(){ // 13:00
+    Content.sendDailyContent('noon', 'youtube').then(result => {
+        logger.info('noon batch > success');
+    }).catch(error => {
+        logger.info('noon batch > error : ' + error);
+    });
+});
+
+crontab.scheduleJob("0 16 * * *", function(){ // 16:00
+    Content.sendDailyContent('after_noon', 'naver_news').then(result => {
+        logger.info('morning batch > success');
+    }).catch(error => {
+        logger.info('morning batch > error : ' + error);
+    });
+});
+
+crontab.scheduleJob("0 21 * * *", function(){ // 21:00
+    Content.sendDailyContent('night', 'youtube').then(result => {
         logger.info('noon batch > success');
     }).catch(error => {
         logger.info('noon batch > error : ' + error);

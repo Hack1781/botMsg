@@ -8,7 +8,7 @@ db.findContents = function(mediaType, celebId) {
     return this.knex(this.table).where({
         'media_type': mediaType,
         'celab_id': celebId
-    }).orderBy('view_count', 'desc').orderBy('content_date', 'desc').select();
+    }).select();
 };
 
 module.exports = db;
