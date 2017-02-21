@@ -44,12 +44,3 @@ crontab.scheduleJob("0 21 * * *", function(){ // 21:00
         logger.info('noon batch > error : ' + error);
     });
 });
-
-
-crontab.scheduleJob("39 22 * * *", function(){ // 14:00
-    Content.sendDailyContent('youtube').then(result => {
-        logger.info('noon batch > success');
-    }).catch(error => {
-        logger.info('noon batch > error : ' + error);
-    });
-});
