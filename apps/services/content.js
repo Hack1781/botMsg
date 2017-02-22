@@ -80,11 +80,11 @@ function sendContentToCeleb(msgType, contentType, celeb) {
         });
 }
 
-function sendDailyContent(type) {
+function sendDailyContent(msgType, contentType) {
     return celabDao.findAll().then(celebs => {
         let tasks = [];
         celebs.forEach(celeb => {
-            tasks.push(sendContentToCeleb(type, celeb));
+            tasks.push(sendContentToCeleb(msgType, contentType, celeb));
         });
 
         return Promise.all(tasks);
