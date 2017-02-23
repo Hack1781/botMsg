@@ -108,11 +108,11 @@ function getMoreContentsAboutCeleb(celebName) {
 }
 
 function find(id) {
-  return contentsDao.findById(id);
+  return conDao.findById(id);
 }
 
 function add(params) {
-  return contentsDao.insert(params);
+  return conDao.insert(params);
 }
 
 module.exports = {
