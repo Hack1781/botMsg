@@ -110,7 +110,11 @@ function getMoreContentsAboutCeleb(celebName) {
                 return null;
             }
             let item = getRandomItem(rows);
-            return getRandomItem(msgPrefix.more) + '\n' + getFormattedMsg(item.media_type, item);
+            let msg = getRandomItem(msgPrefix.more) + '\n' + getFormattedMsg(item.media_type, item);
+            if (item.media_type === 'image') {
+                return {msg: msg, image: item.url};
+            }
+            return {msg: msg};
         });
     });
 }

@@ -48,11 +48,14 @@ router.get('/contents', function(request, response) {
 router.get('/contents/more', function(request, response) {
   let params = request.query;
 
-  Content.getMoreContentsAboutCeleb(params.topic).then(msg => {
-    if (!msg) {
+  Content.getMoreContentsAboutCeleb(params.topic).then(data => {
+    if (!data) {
       response.status(400).send('unknown topic : ' + params.topic);
     }
-    response.send({topic: params.topic, client_id: params.client_id, msg: msg});
+    if (data.image) {
+      return response.send({topic: params.topic, client_id: params.client_id, msg: data.msg, image: data.image});
+    }
+    response.send({topic: params.topic, client_id: params.client_id, msg: data.msg});
   });
 });
 
