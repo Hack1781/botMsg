@@ -71,7 +71,7 @@ function sendContentToCeleb(msgType, contentType, celeb) {
             topic: celeb.name
         };
         if (contentType === 'image') {
-            data.msg = getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, result);
+            data.msg = getRandomItem(msgPrefix[msgType]);
             data.image = result.url;
         } else {
             data.msg = getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, result);
@@ -112,6 +112,7 @@ function getMoreContentsAboutCeleb(celebName) {
             let item = getRandomItem(rows);
             let msg = getRandomItem(msgPrefix.more) + '\n' + getFormattedMsg(item.media_type, item);
             if (item.media_type === 'image') {
+                msg = getRandomItem(msgPrefix.more);
                 return {msg: msg, image: item.url};
             }
             return {msg: msg};
