@@ -49,6 +49,9 @@ function getFormattedMsg(type, item) {
     if (type === 'naver_news') {
         type = 'news';
     }
+    if (type === 'image') {
+        return `[${type}] ${decodeURI(item.title)}`;
+    }
     return `[${type}] ${decodeURI(item.title)}\n${item.url}`;
 }
 
@@ -58,21 +61,26 @@ function getCelebContent(msgType, contentType, celebId) {
             return null;
         }
     
-        let item = getRandomItem(rows);
-        return getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, item);
+        return getRandomItem(rows);
     });
 }
 
 function sendContentToCeleb(msgType, contentType, celeb) {
     return getCelebContent(msgType, contentType, celeb.id).then(result => {
+        let data = {
+            topic: celeb.name
+        };
+        if (contentType === 'image') {
+            data.msg = getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, result);
+            data.image = result.url;
+        } else {
+            data.msg = getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, result);
+        }
         return new Promise(resolve => {
              request({
                     url: 'https://geek1781.com/message/push',
                     method: 'POST',
-                    json: {
-                        topic: celeb.name,
-                        msg: result
-                    }
+                    json: data,
                 }, function(error, response) {
                     resolve();
                 });
