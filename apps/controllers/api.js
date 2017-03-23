@@ -57,7 +57,7 @@ router.get('/contents', async (ctx) => {
 });
 
 router.get('/contents/more', async function (ctx) {
-  let params = ctx.query;
+  const  params = ctx.query;
 
   const data = await Content.getMoreContentsAboutCeleb(params.topic);
 
@@ -109,7 +109,7 @@ router.post('/user', async (ctx) => {
   if (user) {
     await userDao.update(user_id, { celab_id });
   } else {
-    await userDao.insert({ id: user_id, celab_id, num_push: 0 });
+    await userDao.insert({ id: user_id, celab_id, num_push: 2 });
   }
   ctx.body = 'OK';
 });
