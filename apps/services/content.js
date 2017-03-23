@@ -208,6 +208,7 @@ async function simulateDate(userId, msgId = null) {
         });
 
         if (!answer.continue) {
+            await sleep(500);
             return { msg: 'end' };
         }
 
