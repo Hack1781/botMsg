@@ -122,7 +122,6 @@ function getMoreContentsAboutCeleb(celebName) {
 }
 
 
-
 function find(id) {
   return conDao.findById(id);
 }
@@ -132,37 +131,84 @@ function add(params) {
 }
 
 function requestAsync(url, method, data) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         request({
             url: url,
             method: method,
             json: data,
         }, function (error, response) {
+            if (error) {
+                return reject(error);
+            }
             resolve();
         });
     });
+}
 
+function getMoreContentsAboutCeleb(celebName) {
+    return celabDao.findBy('name', celebName).then(celebs => {
+        if (celebs.length === 0) {
+            return null;
+        }
+        let celeb = celebs[0];
+        return conDao.findBy('celab_id', celeb.id).then(rows => {
+            if (rows.length === 0) {
+                return null;
+            }
+            let item = getRandomItem(rows);
+            let msg = getRandomItem(msgPrefix.more) + '\n' + getFormattedMsg(item.media_type, item);
+            if (item.media_type === 'image') {
+                msg = getRandomItem(msgPrefix.more);
+                return {msg: msg, image: item.url};
+            }
+            return {msg: msg};
+        });
+    });
+}
+
+async function getMoreContentOfUser(userId, type) {
+    const user = await userDao.findById(userId);
+    const celab = await celabDao.findById(user.celab_id);
+
+    const contentParam = {
+        celab_id: celab.id
+    }
+    if (type) {
+        contentParam.media_type = type;
+    }
+    const contents = await conDao.findByParams(contentParam);
+    if (contents.length === 0) {
+        return null;
+    }
+
+    let item = getRandomItem(contents);
+    let msg = getRandomItem(msgPrefix.more) + '\n' + getFormattedMsg(item.media_type, item);
+    if (item.media_type === 'image') {
+        msg = getRandomItem(msgPrefix.more);
+        return { msg: msg, image: item.url };
+    }
+    return { msg: msg };
 }
 
 async function sendContentToUser(userId, msgType, contentType) {
     const user = await userDao.findById(userId);
     const content = await getCelebContent(msgType, contentType, user.celab_id);
     const data = {
-        user_id: userId
+        client_id: userId
     };
     if (contentType === 'image') {
         data.msg = getRandomItem(msgPrefix[msgType]);
-        data.image = result.url;
+        data.image = content.url;
     } else {
-        data.msg = getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, result);
+        data.msg = getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, content);
     }
-
     return requestAsync('https://geek1781.com/message/push', 'POST', data);
 }
 
 module.exports = {
     sendDailyContent: sendDailyContent,
     getMoreContentsAboutCeleb: getMoreContentsAboutCeleb,
+    getMoreContentOfUser: getMoreContentOfUser,
     getCelebContent: getCelebContent,
     find: find,
     add: add,

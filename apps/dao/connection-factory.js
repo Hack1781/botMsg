@@ -36,6 +36,9 @@ const prototype = {
   findBy: function(column, value) {
     return this.knex(this.table).where(column, value).select();
   },
+  findByParams: function(params) {
+    return this.knex(this.table).where(params).select();
+  },
   count: function() {
     return this.knex(this.table).count('id');
   },

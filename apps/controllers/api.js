@@ -59,20 +59,20 @@ router.get('/contents', async (ctx) => {
 });
 
 router.get('/contents/more', async function (ctx) {
-  const  params = ctx.query;
+  const  { client_id, type } = ctx.query;
 
-  const data = await Content.getMoreContentsAboutCeleb(params.topic);
+  const data = await Content.getMoreContentOfUser(client_id, type);
 
   if (!data) {
     ctx.status = 400;
-    ctx.body = 'unknown topic : ' + params.topic;
+    ctx.body = 'unknown client_id : ' + client_id;
     return;
   }
   if (data.image) {
-    ctx.body = { topic: params.topic, client_id: params.client_id, msg: data.msg, image: data.image };
+    ctx.body = { client_id: client_id, msg: data.msg, image: data.image };
     return;
   }
-  ctx.body = { topic: params.topic, client_id: params.client_id, msg: data.msg };
+  ctx.body = { client_id: client_id, msg: data.msg };
 });
 
 /**
