@@ -219,10 +219,10 @@ async function simulateDate(userId, msgId = null) {
 
     await requestAsync('https://geek1781.com/message/push', 'POST', {
         client_id: userId,
-        msg: stage.msg
+        msg: stage.msg + '\n\n' + options.join('\n')
     });
 
-    await sleep(1000);
+    await sleep(500);
 
     const responseMsg = {
         "client_id": userId,
@@ -232,7 +232,7 @@ async function simulateDate(userId, msgId = null) {
             "type": "buttons",
             "thumbnailImageUrl": stage.image,
             "title": "Menu",
-            "text": options.join('\n'),
+            "text": '',
             "actions": actions
         }
     }
