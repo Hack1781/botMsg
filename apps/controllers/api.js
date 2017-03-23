@@ -1,23 +1,35 @@
-const express = require('express');
-const router = express.Router();
 const winston = require('winston');
 const celabDao = require('../dao/celab');
+const userDao = require('../dao/users');
 const Content = require('../services/content');
+const Router = require('koa-router');
 
- const logger = new (winston.Logger)({
-   level: "info",
-    transports: [
-      new (winston.transports.File)({ filename: 'debug.log' })
-    ]
-  });
+const logger = new (winston.Logger)({
+  level: "info",
+  transports: [
+    new (winston.transports.File)({ filename: 'debug.log' })
+  ]
+});
 
-router.get('/celabs', function(request, response) {
+const router = new Router();
 
+router.use(async (ctx, next) => {
+  if (ctx.method === 'get') {
+    console.log (ctx.query);
+  } else {
+    console.log (ctx.request.body);
+  }
+  console.log (ctx.url);
+
+  await next(ctx, next);
+});
+
+router.get('/celabs', async function (ctx) {
   logger.info('get > celabs');
 
-  celabDao.findAll().then(rows => {
-    response.send(rows);
-  });
+  const celabs = await celabDao.findAll();
+
+  ctx.body = celabs;
 });
 
 /**
@@ -36,27 +48,29 @@ router.get('/celabs', function(request, response) {
  * }
  *
  */
-router.get('/contents', function(request, response) {
-  let params = request.query;
-  let id = params.id ? params.id : 1;
+router.get('/contents', async (ctx) => {
+  const params = ctx.query;
+  const id = params.id ? params.id : 1;
 
-  Content.find(id).then(function(result) {
-    response.send(result);
-  });
+  const content = await Content.find(id);
+  ctx.body = content;
 });
 
-router.get('/contents/more', function(request, response) {
-  let params = request.query;
+router.get('/contents/more', async function (ctx) {
+  let params = ctx.query;
 
-  Content.getMoreContentsAboutCeleb(params.topic).then(data => {
-    if (!data) {
-      response.status(400).send('unknown topic : ' + params.topic);
-    }
-    if (data.image) {
-      return response.send({topic: params.topic, client_id: params.client_id, msg: data.msg, image: data.image});
-    }
-    response.send({topic: params.topic, client_id: params.client_id, msg: data.msg});
-  });
+  const data = await Content.getMoreContentsAboutCeleb(params.topic);
+
+  if (!data) {
+    ctx.status = 400;
+    ctx.body = 'unknown topic : ' + params.topic;
+    return;
+  }
+  if (data.image) {
+    ctx.body = { topic: params.topic, client_id: params.client_id, msg: data.msg, image: data.image };
+    return;
+  }
+  ctx.body = { topic: params.topic, client_id: params.client_id, msg: data.msg };
 });
 
 /**
@@ -74,40 +88,63 @@ router.get('/contents/more', function(request, response) {
  *   viewCount :
  * }]
  */
-router.post('/contents', function(request, response) {
+router.post('/contents', async function (ctx) {
   // celab type으로 celeb id 정보를 얻어온다. Crawler.find(type)
-  let params = request.body;
+  let params = ctx.request.body;
   if (params.title) {
     params.title = encodeURI(params.title);
   }
 
   logger.info('post > contents [' + JSON.stringify(params, null, 2) + ']');
 
-  Content.add(params).then(function(result) {
-    response.send('OK')
-  });
+  await Content.add(params);
+
+  ctx.body = 'OK';
 });
 
-/**
- * TODO :
- * celab -> celeb
- *
- * Batch 돌려야함
- * node-cron 같은거 써서 하면 되지 않을까?
- * Contents Table에 publish_all_yn 필드 만듦
- * 그리고 해당 요일에 viewcount 높은순&최신&(publish_all_yn='N') 인 데이터 보내주고
- * 보내준 애는 publish_all_yn='Y' 로 업데이트
- *
- * 배치애서 시간별로 컨텐츠를 보내줄지(셀럽과 관계없이 공통으로) 코드에 스케줄링 Object로 하나 만들어둠
- *
- * 그리고 만약 '더보기'기능을 구현한다면 userId = [1,3,5,6,7,9] 이런식으로 추가로 보기를 요청한 것들에 대해서
- * redis 에 key-value mapping을 해 놓아야함. 뭐 하루단위로 clear 한다고 하는 가정하에ㅎ
- * 어떤 컨텐츠를 보여줄지는 랜덤으로
- *
- *  컨텐츠 타입별 - 메세지 그룹을 설정해서
- *  유투브,트위터,날씨를 보낼때 어떤 메세지를 보낼지 코드에 설정해놓는다
- *  랜덤으로 하나 골라서 Wrapping해서 보내기만 하면 됨
- *
- *  날씨는 어떤 데이터를 정형화해서 받아야할지 고민을 해보자
- */
+router.post('/user', async (ctx) => {
+  const {user_id, celab_id} = ctx.request.body;
+
+  const user = await userDao.findById(user_id);
+  if (user) {
+    await userDao.update(user_id, { celab_id });
+  } else {
+    await userDao.insert({ id: user_id, celab_id, num_push: 0 });
+  }
+  ctx.body = 'OK';
+});
+
+router.post('/user/increase-push', async (ctx) => {
+  const {user_id} = ctx.request.body;
+  const user = await userDao.findById(user_id);
+  if (!user) {
+    ctx.status = 400;
+    ctx.body = 'USER NOT FOUND';
+    return;
+  }
+  let numPush = user.num_push;
+  if (numPush < 4) {
+    numPush += 1;
+    await userDao.increase(user_id, 'num_push');
+  }
+  ctx.body = {num_push: numPush };
+});
+
+router.post('/user/decrease-push', async (ctx) => {
+  const {user_id} = ctx.request.body;
+  const user = await userDao.findById(user_id);
+  if (!user) {
+    ctx.status = 400;
+    ctx.body = 'USER NOT FOUND';
+    return;
+  }
+  let numPush = user.num_push;
+  if (numPush > 0) {
+    numPush -= 1;
+    await userDao.decrease(user_id, 'num_push');
+  }
+  
+  ctx.body = {num_push: numPush};
+});
+
 module.exports = router;
