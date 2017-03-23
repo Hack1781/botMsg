@@ -109,6 +109,10 @@ async function sendContentAboutCeleb(msgType, contentType, celebId, minNumPush) 
         promises.push(requestAsync('https://geek1781.com/message/push', 'POST', data));
     });
 
+    if (promises.length > 0) {
+        await conDao.update(content.id, {publish_yn: 'Y'});
+    }
+
     return Promise.all(promises);
 }
 
@@ -117,7 +121,7 @@ async function sendDailyContent(msgType, contentType, minNumPush) {
 
     const promises = [];
     celebs.forEach(celeb => {
-        promises.push(sendContentAbountCeleb(msgType, contentType, celeb, minNumPush));
+        promises.push(sendContentAboutCeleb(msgType, contentType, celeb, minNumPush));
     });
 
     return Promise.all(promises);

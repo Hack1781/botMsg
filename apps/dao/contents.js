@@ -7,7 +7,8 @@ db.table = 'contents';
 db.findContents = function(mediaType, celebId) {
     return this.knex(this.table).where({
         'media_type': mediaType,
-        'celab_id': celebId
+        'celab_id': celebId,
+        'publish_yn': 'N'
     }).select();
 };
 
