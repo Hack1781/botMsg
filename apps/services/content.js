@@ -211,9 +211,9 @@ async function simulateDate(userId, msgId = null) {
         if (!answer.continue) {
             return null;
         }
-    };
 
-    await sleep(1000);
+        await sleep(1000);
+    };
 
     const {stage, actions, options} = await getSimulationNext(msgId);
 
