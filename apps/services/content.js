@@ -191,7 +191,10 @@ async function getSimulationNext(msgId) {
 }
 
 async function simulateDate(userId, msgId = null) {
-    if (msgId !== null && msgId !== undefined && msgId !== '') {
+    if (!msgId && msgId !== 0) {
+        msgId = null;
+    }
+    if (msgId !== null) {
         const answer = await getSimulationAnswer(msgId);
 
         await requestAsync('https://geek1781.com/message/push', 'POST', {
