@@ -232,7 +232,7 @@ async function simulateDate(userId, msgId = null) {
             "type": "buttons",
             "thumbnailImageUrl": stage.image,
             "title": "Menu",
-            "text": '',
+            "text": '당신의 선택은?',
             "actions": actions
         }
     }
