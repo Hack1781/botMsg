@@ -179,21 +179,17 @@ async function getSimulationNext(msgId) {
     const stageMsgs = await gameMsgDao.findBy('stage_no', stageNo);
     const actions = [];
     const optionKeys = ['a', 'b', 'c', 'd'];
-    const options = [];
     stageMsgs.forEach((msg, index) => {
         actions.push({
             "type": "postback",
-            "label": optionKeys[index],
+            "label": msg.msg,
             "data": "quiz:" + msg.id
         });
-
-        options.push(optionKeys[index] + '-' + msg.msg);
     })
 
     return {
         stage,
-        actions,
-        options
+        actions
     };
 }
 
@@ -217,7 +213,7 @@ async function simulateDate(userId, msgId = null) {
         await sleep(1000);
     };
 
-    const {stage, actions, options} = await getSimulationNext(msgId);
+    const {stage, actions} = await getSimulationNext(msgId);
     if (!stage) {
         await userDao.update(userId, {winner: 1});
         return { msg: 'finish'};
@@ -225,7 +221,7 @@ async function simulateDate(userId, msgId = null) {
 
     await requestAsync('https://geek1781.com/message/push', 'POST', {
         client_id: userId,
-        msg: stage.msg + '\n\n' + options.join('\n')
+        msg: stage.msg
     });
 
     await sleep(500);
