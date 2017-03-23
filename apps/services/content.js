@@ -209,7 +209,7 @@ async function simulateDate(userId, msgId = null) {
         });
 
         if (!answer.continue) {
-            return null;
+            return {};
         }
 
         await sleep(1000);
@@ -231,7 +231,7 @@ async function simulateDate(userId, msgId = null) {
         "template": {
             "type": "buttons",
             "thumbnailImageUrl": stage.image,
-            "title": "Menu",
+            "title": stage.title,
             "text": '당신의 선택은?',
             "actions": actions
         }
