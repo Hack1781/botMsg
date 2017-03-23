@@ -1,6 +1,7 @@
 const request = require('request');
 const conDao = require('../dao/contents');
 const celabDao = require('../dao/celab');
+const userDao = require('../dao/users');
 
 const ogglePrefix = [
     '오빠~ 밥 먹었어? 내 생각날때 한번 봐봐~\n',
@@ -120,6 +121,8 @@ function getMoreContentsAboutCeleb(celebName) {
     });
 }
 
+
+
 function find(id) {
   return conDao.findById(id);
 }
@@ -128,10 +131,40 @@ function add(params) {
   return conDao.insert(params);
 }
 
+function requestAsync(url, method, data) {
+    return new Promise(resolve => {
+        request({
+            url: url,
+            method: method,
+            json: data,
+        }, function (error, response) {
+            resolve();
+        });
+    });
+
+}
+
+async function sendContentToUser(userId, msgType, contentType) {
+    const user = await userDao.findById(userId);
+    const content = await getCelebContent(msgType, contentType, user.celab_id);
+    const data = {
+        user_id: userId
+    };
+    if (contentType === 'image') {
+        data.msg = getRandomItem(msgPrefix[msgType]);
+        data.image = result.url;
+    } else {
+        data.msg = getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, result);
+    }
+
+    return requestAsync('https://geek1781.com/message/push', 'POST', data);
+}
+
 module.exports = {
     sendDailyContent: sendDailyContent,
     getMoreContentsAboutCeleb: getMoreContentsAboutCeleb,
     getCelebContent: getCelebContent,
     find: find,
-    add: add
+    add: add,
+    sendContentToUser: sendContentToUser
 }

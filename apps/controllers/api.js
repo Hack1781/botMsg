@@ -11,7 +11,9 @@ const logger = new (winston.Logger)({
   ]
 });
 
-const router = new Router();
+const router = new Router({
+  prefix: '/api'
+});
 
 router.use(async (ctx, next) => {
   if (ctx.method === 'get') {
