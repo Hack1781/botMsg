@@ -56,72 +56,6 @@ function getFormattedMsg(type, item) {
     return `[${type}] ${decodeURI(item.title)}\n${item.url}`;
 }
 
-function getCelebContent(msgType, contentType, celebId) {
-    return conDao.findContents(contentType, celebId).then(rows => {
-        if (!rows || rows.length === 0) {
-            return null;
-        }
-    
-        return getRandomItem(rows);
-    });
-}
-
-function sendContentToCeleb(msgType, contentType, celeb) {
-    return getCelebContent(msgType, contentType, celeb.id).then(result => {
-        let data = {
-            topic: celeb.name
-        };
-        if (contentType === 'image') {
-            data.msg = getRandomItem(msgPrefix[msgType]);
-            data.image = result.url;
-        } else {
-            data.msg = getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, result);
-        }
-        return new Promise(resolve => {
-             request({
-                    url: 'https://geek1781.com/message/push',
-                    method: 'POST',
-                    json: data,
-                }, function(error, response) {
-                    resolve();
-                });
-            });
-        });
-}
-
-function sendDailyContent(msgType, contentType) {
-    return celabDao.findAll().then(celebs => {
-        let tasks = [];
-        celebs.forEach(celeb => {
-            tasks.push(sendContentToCeleb(msgType, contentType, celeb));
-        });
-
-        return Promise.all(tasks);
-    });
-}
-
-function getMoreContentsAboutCeleb(celebName) {
-    return celabDao.findBy('name', celebName).then(celebs => {
-        if (celebs.length === 0) {
-            return null;
-        }
-        let celeb = celebs[0];
-        return conDao.findBy('celab_id', celeb.id).then(rows => {
-            if (rows.length === 0) {
-                return null;
-            }
-            let item = getRandomItem(rows);
-            let msg = getRandomItem(msgPrefix.more) + '\n' + getFormattedMsg(item.media_type, item);
-            if (item.media_type === 'image') {
-                msg = getRandomItem(msgPrefix.more);
-                return {msg: msg, image: item.url};
-            }
-            return {msg: msg};
-        });
-    });
-}
-
-
 function find(id) {
   return conDao.findById(id);
 }
@@ -145,25 +79,48 @@ function requestAsync(url, method, data) {
     });
 }
 
-function getMoreContentsAboutCeleb(celebName) {
-    return celabDao.findBy('name', celebName).then(celebs => {
-        if (celebs.length === 0) {
+function getCelebContent(msgType, contentType, celebId) {
+    return conDao.findContents(contentType, celebId).then(rows => {
+        if (!rows || rows.length === 0) {
             return null;
         }
-        let celeb = celebs[0];
-        return conDao.findBy('celab_id', celeb.id).then(rows => {
-            if (rows.length === 0) {
-                return null;
-            }
-            let item = getRandomItem(rows);
-            let msg = getRandomItem(msgPrefix.more) + '\n' + getFormattedMsg(item.media_type, item);
-            if (item.media_type === 'image') {
-                msg = getRandomItem(msgPrefix.more);
-                return {msg: msg, image: item.url};
-            }
-            return {msg: msg};
-        });
+    
+        return getRandomItem(rows);
     });
+}
+
+async function sendContentAboutCeleb(msgType, contentType, celebId, minNumPush) {
+    const content = await getCelebContent(msgType, contentType, celebId);
+    let data = {};
+    if (contentType === 'image') {
+        data.msg = getRandomItem(msgPrefix[msgType]);
+        data.image = content.url;
+    } else {
+        data.msg = getRandomItem(msgPrefix[msgType]) + '\n' + getFormattedMsg(contentType, content);
+    }
+
+    const promises = [];
+    const users = await userDao.findBy('celab_id', celebId);
+
+    users.forEach((user) => {
+        if (user.num_push < minNumPush) {
+            return;
+        }
+        promises.push(requestAsync('https://geek1781.com/message/push', 'POST', data));
+    });
+
+    return Promise.all(promises);
+}
+
+async function sendDailyContent(msgType, contentType, minNumPush) {
+    const celabs = await celabDao.findAll();
+
+    const promises = [];
+    celebs.forEach(celeb => {
+        promises.push(sendContentAbountCeleb(msgType, contentType, celeb, minNumPush));
+    });
+
+    return Promise.all(promises);
 }
 
 async function getMoreContentOfUser(userId, type) {
@@ -176,14 +133,11 @@ async function getMoreContentOfUser(userId, type) {
     if (type) {
         contentParam.media_type = type;
     }
-    console.log (contentParam);
     const contents = await conDao.findByParams(contentParam);
 
-    console.log (contents);
     if (contents.length === 0) {
         return null;
     }
-
     let item = getRandomItem(contents);
     let msg = getRandomItem(msgPrefix.more) + '\n' + getFormattedMsg(item.media_type, item);
     if (item.media_type === 'image') {
@@ -210,7 +164,6 @@ async function sendContentToUser(userId, msgType, contentType) {
 
 module.exports = {
     sendDailyContent: sendDailyContent,
-    getMoreContentsAboutCeleb: getMoreContentsAboutCeleb,
     getMoreContentOfUser: getMoreContentOfUser,
     getCelebContent: getCelebContent,
     find: find,
