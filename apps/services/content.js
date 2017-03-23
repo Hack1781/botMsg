@@ -80,7 +80,7 @@ function requestAsync(url, method, data) {
 }
 
 function getCelebContent(msgType, contentType, celebId) {
-    return conDao.findContents(contentType, celebId).then(rows => {
+    return conDao.findNewstContents(contentType, celebId).then(rows => {
         if (!rows || rows.length === 0) {
             return null;
         }
