@@ -172,8 +172,9 @@ async function getSimulationNext(msgId) {
         msg = await gameMsgDao.findById(msgId);
         stageNo = msg.stage_no + 1;
         stage = await stageDao.findOneBy('stage_no', stageNo);
-
-        return {};
+        if (!stage) {
+            return {};
+        }
     }
 
     const stageMsgs = await gameMsgDao.findBy('stage_no', stageNo);
