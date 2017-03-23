@@ -208,7 +208,7 @@ async function simulateDate(userId, msgId = null) {
         }
     };
 
-    await sleep(1000);
+    await sleep(2000);
 
     const {stage, actions} = await getSimulationNext(msgId);
 
