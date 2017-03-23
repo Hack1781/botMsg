@@ -3,6 +3,8 @@ const conDao = require('../dao/contents');
 const celabDao = require('../dao/celab');
 const userDao = require('../dao/users');
 const pushDao = require('../dao/push');
+const stageDao = require('../dao/game-stage');
+const gameMsgDao = require('../dao/game-msg');
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * (max + 1));
@@ -140,11 +142,99 @@ async function sendContentToUser(userId, msgType, contentType) {
     return requestAsync('https://geek1781.com/message/push', 'POST', data);
 }
 
+async function sleep(ms) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(true);
+        }, ms);
+    })
+}
+
+async function getSimulationAnswer(msgId = null) {
+    if (msgId === null) {
+        return null;
+    }
+
+    const msg = await gameMsgDao.findById(msgId);
+    return {
+        msg: msg.response_msg,
+        image: msg.response_image,
+        continue: msg.answer_yn === 'Y'
+    }
+}
+
+async function getSimulationNext(msgId) {
+    let stage, stageNo, msg;
+    if (msgId === null) {
+        stage = await stageDao.findOneBy('stage_no', 1);
+        stageNo = 1;
+    } else {
+        msg = await gameMsgDao.findById(msgId);
+        stageNo = msg.stage_no;
+        stage = await stageDao.findOneBy('stage_no', stageNo);
+    }
+
+    const stageMsgs = await gameMsgDao.findBy('stage_no', stageNo);
+    const actions = [];
+    stageMsgs.forEach((msg) => {
+        actions.push({
+            "type": "postback",
+            "label": msg.msg,
+            "data": "quiz:" + msg.id
+        });
+    })
+
+    return {
+        stage,
+        actions
+    };
+}
+
+async function simulateDate(userId, msgId = null) {
+    if (msgId !== null) {
+        const answer = await getSimulationAnswer(msgId);
+
+        await requestAsync('https://geek1781.com/message/push', 'POST', {
+            client_id: userId,
+            msg: answer.msg,
+            image: answer.image
+        });
+
+        if (!answer.continue) {
+            return null;
+        }
+    };
+
+    console.log (1);
+
+    await sleep(1000);
+
+    console.log (2);
+
+    const {stage, actions} = await getSimulationNext(msgId);
+
+    const responseMsg = {
+        "client_id": userId,
+        "type": "template",
+        "altText": "모바일에서 확인 해 주세요~",
+        "template": {
+            "type": "buttons",
+            "thumbnailImageUrl": stage.image,
+            "title": "Menu",
+            "text": stage.msg,
+            "actions": actions
+        }
+    }
+
+    return responseMsg;
+}
+
 module.exports = {
     sendDailyContent: sendDailyContent,
     getMoreContentOfUser: getMoreContentOfUser,
     getCelebContent: getCelebContent,
     find: find,
     add: add,
-    sendContentToUser: sendContentToUser
+    sendContentToUser: sendContentToUser,
+    simulateDate: simulateDate
 }

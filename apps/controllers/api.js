@@ -142,12 +142,20 @@ router.post('/user/decrease-push', async (ctx) => {
     return;
   }
   let numPush = user.num_push;
-  if (numPush > 0) {
+  if (numPush > 1) {
     numPush -= 1;
     await userDao.decrease(client_id, 'num_push');
   }
   
   ctx.body = {num_push: numPush};
 });
+
+router.get('/simulate', async(ctx) => {
+  const {client_id, answer_id} = ctx.query;
+
+  const msg = await Content.simulateDate(client_id, answer_id);
+
+  ctx.body = msg;
+})
 
 module.exports = router;
