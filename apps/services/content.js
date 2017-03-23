@@ -176,17 +176,22 @@ async function getSimulationNext(msgId) {
 
     const stageMsgs = await gameMsgDao.findBy('stage_no', stageNo);
     const actions = [];
-    stageMsgs.forEach((msg) => {
+    const optionKeys = ['a', 'b', 'c', 'd'];
+    const options = [];
+    stageMsgs.forEach((msg, index) => {
         actions.push({
             "type": "postback",
-            "label": msg.msg,
+            "label": optionKeys[index],
             "data": "quiz:" + msg.id
         });
+
+        options.push(optionKeys[index] + '-' + msg.msg);
     })
 
     return {
         stage,
-        actions
+        actions,
+        options
     };
 }
 
@@ -208,9 +213,16 @@ async function simulateDate(userId, msgId = null) {
         }
     };
 
-    await sleep(2000);
+    await sleep(1000);
 
-    const {stage, actions} = await getSimulationNext(msgId);
+    const {stage, actions, options} = await getSimulationNext(msgId);
+
+    await requestAsync('https://geek1781.com/message/push', 'POST', {
+        client_id: userId,
+        msg: stage.msg
+    });
+
+    await sleep(1000);
 
     const responseMsg = {
         "client_id": userId,
@@ -220,7 +232,7 @@ async function simulateDate(userId, msgId = null) {
             "type": "buttons",
             "thumbnailImageUrl": stage.image,
             "title": "Menu",
-            "text": stage.msg,
+            "text": options.join('\n'),
             "actions": actions
         }
     }
