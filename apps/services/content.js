@@ -191,7 +191,7 @@ async function getSimulationNext(msgId) {
 }
 
 async function simulateDate(userId, msgId = null) {
-    if (msgId !== null) {
+    if (msgId !== null && msgId !== undefined && msgId !== '') {
         const answer = await getSimulationAnswer(msgId);
 
         await requestAsync('https://geek1781.com/message/push', 'POST', {
@@ -205,11 +205,7 @@ async function simulateDate(userId, msgId = null) {
         }
     };
 
-    console.log (1);
-
     await sleep(1000);
-
-    console.log (2);
 
     const {stage, actions} = await getSimulationNext(msgId);
 
