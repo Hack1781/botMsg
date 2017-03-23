@@ -176,7 +176,10 @@ async function getMoreContentOfUser(userId, type) {
     if (type) {
         contentParam.media_type = type;
     }
+    console.log (contentParam);
     const contents = await conDao.findByParams(contentParam);
+
+    console.log (contents);
     if (contents.length === 0) {
         return null;
     }

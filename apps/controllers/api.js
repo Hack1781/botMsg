@@ -105,20 +105,21 @@ router.post('/contents', async function (ctx) {
 });
 
 router.post('/user', async (ctx) => {
-  const {user_id, celab_id} = ctx.request.body;
+  const {client_id, celab_id} = ctx.request.body;
 
-  const user = await userDao.findById(user_id);
+  const user = await userDao.findById(client_id);
+  const celab = await celabDao.findById(celab_id);
   if (user) {
-    await userDao.update(user_id, { celab_id });
+    await userDao.update(client_id, { celab_id });
   } else {
-    await userDao.insert({ id: user_id, celab_id, num_push: 2 });
+    await userDao.insert({ id: client_id, celab_id, num_push: 2 });
   }
-  ctx.body = 'OK';
+  ctx.body = {celab: celab.name};
 });
 
 router.post('/user/increase-push', async (ctx) => {
-  const {user_id} = ctx.request.body;
-  const user = await userDao.findById(user_id);
+  const {client_id} = ctx.request.body;
+  const user = await userDao.findById(client_id);
   if (!user) {
     ctx.status = 400;
     ctx.body = 'USER NOT FOUND';
@@ -127,14 +128,14 @@ router.post('/user/increase-push', async (ctx) => {
   let numPush = user.num_push;
   if (numPush < 4) {
     numPush += 1;
-    await userDao.increase(user_id, 'num_push');
+    await userDao.increase(client_id, 'num_push');
   }
   ctx.body = {num_push: numPush };
 });
 
 router.post('/user/decrease-push', async (ctx) => {
-  const {user_id} = ctx.request.body;
-  const user = await userDao.findById(user_id);
+  const {client_id} = ctx.request.body;
+  const user = await userDao.findById(client_id);
   if (!user) {
     ctx.status = 400;
     ctx.body = 'USER NOT FOUND';
@@ -143,7 +144,7 @@ router.post('/user/decrease-push', async (ctx) => {
   let numPush = user.num_push;
   if (numPush > 0) {
     numPush -= 1;
-    await userDao.decrease(user_id, 'num_push');
+    await userDao.decrease(client_id, 'num_push');
   }
   
   ctx.body = {num_push: numPush};
