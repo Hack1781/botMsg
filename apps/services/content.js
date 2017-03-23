@@ -170,7 +170,7 @@ async function getSimulationNext(msgId) {
         stageNo = 1;
     } else {
         msg = await gameMsgDao.findById(msgId);
-        stageNo = msg.stage_no;
+        stageNo = msg.stage_no + 1;
         stage = await stageDao.findOneBy('stage_no', stageNo);
     }
 
@@ -209,7 +209,7 @@ async function simulateDate(userId, msgId = null) {
         });
 
         if (!answer.continue) {
-            return {};
+            return { msg: 'end' };
         }
 
         await sleep(1000);
