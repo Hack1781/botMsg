@@ -11,19 +11,36 @@ const logger = new (winston.Logger)({
     ]
 });
 
-
-crontab.scheduleJob("0 13 * * *", async function () { // 13:00
+crontab.scheduleJob("0 9 * * *", async function () { // 9:00
     try {
-        await Content.sendDailyContent('noon', 'image', 3);
+        await Content.sendDailyContent('morning', 'image', 3);
         logger.info('noon batch > success');
     } catch (e) {
         logger.info('noon batch > error : ' + e);
     }
 });
 
-crontab.scheduleJob("0 19 * * *", async function () { // 21:00
+crontab.scheduleJob("0 13 * * *", async function () { // 13:00
     try {
-        await Content.sendDailyContent('night', 'image', 2);
+        await Content.sendDailyContent('afternoon', 'image', 1);
+        logger.info('noon batch > success');
+    } catch (e) {
+        logger.info('noon batch > error : ' + e);
+    }
+});
+
+crontab.scheduleJob("0 19 * * *", async function () { // 19:00
+    try {
+        await Content.sendDailyContent('evening', 'image', 2);
+        logger.info('noon batch > success');
+    } catch (e) {
+        logger.info('noon batch > error : ' + e);
+    }
+});
+
+crontab.scheduleJob("0 22 * * *", async function () { // 22:00
+    try {
+        await Content.sendDailyContent('night', 'image', 4);
         logger.info('noon batch > success');
     } catch (e) {
         logger.info('noon batch > error : ' + e);
