@@ -172,6 +172,8 @@ async function getSimulationNext(msgId) {
         msg = await gameMsgDao.findById(msgId);
         stageNo = msg.stage_no + 1;
         stage = await stageDao.findOneBy('stage_no', stageNo);
+
+        return {};
     }
 
     const stageMsgs = await gameMsgDao.findBy('stage_no', stageNo);
@@ -216,6 +218,10 @@ async function simulateDate(userId, msgId = null) {
     };
 
     const {stage, actions, options} = await getSimulationNext(msgId);
+    if (!stage) {
+        await userDao.update(userId, {winner: 1});
+        return { msg: 'finish'};
+    }
 
     await requestAsync('https://geek1781.com/message/push', 'POST', {
         client_id: userId,
